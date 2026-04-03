@@ -40,7 +40,10 @@ export function exportCompressedLevel() {
         code = S.idMap.rotator;
       } else if (S.pSwitchPlaced?.[y]?.[x]) {
         code = S.idMap.pSwitch;
-      } else if (S.grid[y][x] === 1) code = S.idMap.wall;
+      } else if (S.turrets?.[y]?.[x]) { 
+        const d = S.turrets[y][x]; 
+        code = S.idMap['turret'+d] || ('turret'+d);
+      else if (S.grid[y][x] === 1) code = S.idMap.wall;
       else if (S.turners?.[y]?.[x]) { const d=S.turners[y][x]; code = S.idMap['turner'+d]; }
       else if (S.bouncers?.[y]?.[x]) { const b=S.bouncers[y][x]; code = S.idMap['bouncer'+b]; }
       else if (S.spikes?.[y]?.[x])            code = S.idMap.spike;

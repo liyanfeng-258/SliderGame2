@@ -131,6 +131,13 @@ export function createState(overrides = {}) {
     pSwitchDurationSec: 5.0,
     pSwitchWalls: null,       // 标记哪些墙是由 P 机关变出的
 
+    // 炮台
+    turrets: null,
+    turretIntervalSec: 2.0,
+    bulletSpeedSec: 0.2,
+    activeBullets: [],
+    turretTimers: [],
+    bulletTimer: null,
     DOM: {},
   };
 

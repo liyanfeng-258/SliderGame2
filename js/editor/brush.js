@@ -196,8 +196,25 @@ export function brushAt(x, y) {
       S.pSwitchPlaced[y][x] = true;
       status('已放置 P 机关');
     }
+  } else if (b === 'turret') {
+    // ★ 炮台刷子逻辑
+    if (!S.turrets) S.turrets = newEmpty(S.gridH, S.gridW, null);
+    
+    // 如果点在已经有炮台的格子上，就删除它
+    if (S.grid[y][x] === 1 && S.turrets[y][x]) {
+      S.grid[y][x] = 0;
+      S.turrets[y][x] = null;
+      status('已删除炮台');
+    } else {
+      if (S.grid[y][x] === 1) S.grid[y][x] = 0;
+      clearConflicts(x, y);
+      S.grid[y][x] = 1; // 炮台本身是一堵实体墙
+      const tDirEl = document.getElementById('turretDir');
+      S.turrets[y][x] = tDirEl ? tDirEl.value : 'U';
+      status('已放置炮台');
+    }
   }
-
+  
   // 所有分支统一调用 autosave 和 draw
   autosave();
   draw();

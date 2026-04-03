@@ -123,6 +123,42 @@ const Renderer = (() => {
       }
     }
 
+    // ★ 画炮台
+    if (S.turrets) {
+      for (let y = 0; y < S.gridH; y++) {
+        for (let x = 0; x < S.gridW; x++) {
+          if (S.turrets[y][x]) {
+             const px = offX + x * size;
+             const py = offY + y * size;
+             const dir = S.turrets[y][x];
+             
+             // 画深灰色的炮台底座
+             ctx.fillStyle = '#475569';
+             ctx.fillRect(px, py, size, size);
+             
+             // 画浅灰色的炮管，区分方向
+             ctx.fillStyle = '#cbd5e1';
+             if (dir === 'U') ctx.fillRect(px + size*0.3, py, size*0.4, size*0.5);
+             if (dir === 'D') ctx.fillRect(px + size*0.3, py + size*0.5, size*0.4, size*0.5);
+             if (dir === 'L') ctx.fillRect(px, py + size*0.3, size*0.5, size*0.4);
+             if (dir === 'R') ctx.fillRect(px + size*0.5, py + size*0.3, size*0.5, size*0.4);
+          }
+        }
+      }
+    }
+
+    // ★ 画正在飞行的子弹
+    if (S.activeBullets) {
+        ctx.fillStyle = '#ef4444'; // 大红色的子弹
+        for (let b of S.activeBullets) {
+             const bx = offX + (b.x + 0.5) * size;
+             const by = offY + (b.y + 0.5) * size;
+             ctx.beginPath();
+             ctx.arc(bx, by, size * 0.25, 0, Math.PI * 2);
+             ctx.fill();
+        }
+    }
+
     if (S.DOM.mode?.value === 'edit' && S.startPos) {
       const sx = offX + (S.startPos.x + 0.5) * size;
       const sy = offY + (S.startPos.y + 0.5) * size;

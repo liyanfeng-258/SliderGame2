@@ -55,6 +55,7 @@ export function applyLevelObject(obj) {
     S.rotatorAngles = newEmpty(H, W, 0);
     S.rotatorTimers = newEmpty(H, W, null);
     S.pSwitchPlaced = newEmpty(H, W, false);   // P 机关编辑层
+    S.turrets       = newEmpty(H, W, null); // ★ 新增炮台初始化
     S.manholes      = newEmpty(H, W, null);
     S.manholePairs  = [];
     S.manholeGhost  = null;
@@ -104,7 +105,9 @@ export function applyLevelObject(obj) {
         else if (eq(c, 'bouncerRD')) S.bouncers[y][x] = 'RD';
         else if (code2Item[c]) S.itemsPlaced[y][x] = code2Item[c];
         else if (eq(c, 'groundDecor')) S.groundDecor[y][x] = true;
-        else if (eq(c, 'manhole')) S.manholes[y][x] = 1;
+        else if (eq(c, 'manhole')) {
+          
+        }
         else if (eq(c, 'rotator')) {
           S.rotators[y][x] = true;
           S.grid[y][x] = 1;
@@ -132,6 +135,10 @@ export function applyLevelObject(obj) {
           S.grid[y][x] = 0; // 机关格是地板
         }
       }
+        else if (eq(c, 'turretU') || c === 'turretU') { S.turrets[y][x] = 'U'; S.grid[y][x] = 1; }
+        else if (eq(c, 'turretD') || c === 'turretD') { S.turrets[y][x] = 'D'; S.grid[y][x] = 1; }
+        else if (eq(c, 'turretL') || c === 'turretL') { S.turrets[y][x] = 'L'; S.grid[y][x] = 1; }
+        else if (eq(c, 'turretR') || c === 'turretR') { S.turrets[y][x] = 'R'; S.grid[y][x] = 1; }
     }
     S.startPos = (obj.startPos && obj.startPos.x >= 0 && obj.startPos.y >= 0)
       ? { x: obj.startPos.x, y: obj.startPos.y } : null;

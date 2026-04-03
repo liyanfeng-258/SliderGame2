@@ -140,6 +140,20 @@ function handlePSwitch(x, y) {
   return null;
 }
 
+function handleBullet(x, y) {
+  if (!S.activeBullets) return R_CONT;
+  for (let i = 0; i < S.activeBullets.length; i++) {
+    const b = S.activeBullets[i];
+    // 如果玩家进入的格子，正好有一颗子弹在这里
+    if (b.x === x && b.y === y) {
+      S.moving = false; 
+      showDead(); 
+      return rStop('bullet');
+    }
+  }
+  return R_CONT;
+}
+
 export function processStep(x, y, dx, dy) {
   const anim = { footprint: false, coin: false };
   if (handleFootprint(x, y)) anim.footprint = true;
@@ -161,6 +175,11 @@ export function processStep(x, y, dx, dy) {
 
   const pSwitchRes = handlePSwitch(x, y);
   if (pSwitchRes) return pSwitchRes;
+
+  const resSpike = handleSpike(x, y); if (resSpike.stopped) return resSpike;
+  
+  // ★ 添加子弹碰撞检测
+  const resBullet = handleBullet(x, y); if (resBullet.stopped) return resBullet;
 
   return { ...R_CONT, anim };
 }

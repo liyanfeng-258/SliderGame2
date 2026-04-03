@@ -193,6 +193,69 @@ export function setupPlay(newRandom = false) {
   S.pSwitchSnapshot = null;
   S.pSwitchWalls = newEmpty(S.gridH, S.gridW, false);   // 初始化标记数组
 
+  // ====== ★ 炮台与子弹逻辑开始 ======
+  // 1. 清理旧的定时器和子弹
+  if (S.turretTimers) S.turretTimers.forEach(t => clearInterval(t));
+  if (S.bulletTimer) clearInterval(S.bulletTimer);
+  S.turretTimers = [];
+  S.activeBullets = [];
+
+  // 2. 读取 HTML 上的设定时间
+  S.turretIntervalSec = parseFloat(S.DOM.turretInterval?.value || 2);
+  S.bulletSpeedSec = parseFloat(S.DOM.bulletSpeed?.value || 0.2);
+
+  // 3. 为地图上的每一个炮台启动定时发射器
+  if (S.turrets) {
+    for (let y = 0; y < S.gridH; y++) {
+      for (let x = 0; x < S.gridW; x++) {
+        if (S.turrets[y][x]) {
+          const dir = S.turrets[y][x];
+          const tId = setInterval(() => {
+            if (S.DOM.mode?.value !== 'play' && S.DOM.mode?.value !== 'multi') return;
+            if (S.inputLocked || S.gameEnded) return;
+            // 在炮台位置生成一颗对应方向的子弹
+            S.activeBullets.push({ x, y, dir });
+            draw();
+          }, Math.max(0.5, S.turretIntervalSec) * 1000);
+          S.turretTimers.push(tId);
+        }
+      }
+    }
+  }
+
+  // 4. 启动子弹飞行全局循环 (按照设定的速度，每隔几百毫秒往前挪一格)
+  S.bulletTimer = setInterval(() => {
+    if (S.DOM.mode?.value !== 'play' && S.DOM.mode?.value !== 'multi') return;
+    if (S.inputLocked || S.gameEnded) return;
+    if (!S.activeBullets || S.activeBullets.length === 0) return;
+
+    // 倒序遍历数组，方便在飞行途中销毁子弹
+    for (let i = S.activeBullets.length - 1; i >= 0; i--) {
+        let b = S.activeBullets[i];
+        
+        // 子弹移动
+        if (b.dir === 'U') b.y--;
+        else if (b.dir === 'D') b.y++;
+        else if (b.dir === 'L') b.x--;
+        else if (b.dir === 'R') b.x++;
+
+        // 如果越界，或者撞到了墙（不是炮台本身的墙），则销毁子弹
+        if (b.x < 0 || b.y < 0 || b.x >= S.gridW || b.y >= S.gridH || (S.grid[b.y][b.x] === 1 && (!S.turrets || !S.turrets[b.y][b.x]))) {
+            S.activeBullets.splice(i, 1);
+            continue;
+        }
+
+        // 如果子弹碰到了玩家所在的格子 -> 玩家死亡！
+        if (S.player && b.x === S.player.x && b.y === S.player.y) {
+            S.moving = false;
+            showDead(); // 触发死亡弹窗
+            break;
+        }
+    }
+    draw();
+  }, Math.max(0.05, S.bulletSpeedSec) * 1000);
+  // ====== ★ 炮台逻辑结束 ======
+
   refreshToolBadges();
   draw(); updateHUD();
   S.moveHistory = []; S.gameEnded = false; updateCoinsHUD();

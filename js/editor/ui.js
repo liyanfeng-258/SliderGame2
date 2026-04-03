@@ -9,4 +9,5 @@ export function updateToolVisibility() {
   S.DOM.pitControls.style.display = (b === 'pit') ? '' : 'none';
   S.DOM.rotatorControls.style.display = (b === 'rotator') ? '' : 'none';
   S.DOM.pSwitchControls.style.display = (b === 'pSwitch') ? '' : 'none';
+  S.DOM.turretControls.style.display = (b === 'turret') ? '' : 'none'; // ★ 添加这行
 }

@@ -1,0 +1,457 @@
+:root{
+  --bg:#0b1220; --bg2:#121a2c; --panel:#0f1a2d;
+  --text:#e5e7eb; --muted:#9ca3af; --primary:#22d3ee; --accent:#ffd166;
+}
+*{box-sizing:border-box} html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:14px/1.4 ui-sans-serif,system-ui,PingFang SC,Segoe UI,Arial}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg2);border-bottom:1px solid #1e293b;gap:12px;position:sticky;top:0;z-index:10}
+.topbar .left{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.topbar .right{display:flex;align-items:center;gap:8px}
+.topbar label{color:var(--muted)}
+button{background:#1f2937;border:1px solid #334155;color:var(--text);padding:6px 12px;border-radius:8px;cursor:pointer}
+button.primary{background:var(--primary);border-color:transparent;color:#001018}
+button:disabled{opacity:.5;cursor:not-allowed}
+select,input{background:#0f172a;border:1px solid #334155;color:var(--text);padding:6px;border-radius:8px;min-width:56px}
+.status{color:var(--muted);margin-left:8px}
+
+.hud{margin-left:10px;background:#0f172a;padding:6px 10px;border-radius:10px;border:1px solid #233044;display:inline-flex;align-items:center;white-space:nowrap}
+.hud b{font-weight:700}
+.hud .sep{display:inline-block;width:1px;height:14px;background:#334155;margin:0 10px}
+.paw{display:inline-flex;align-items:center;gap:6px}
+.hud-icon{display:none}
+
+.edit-controls{padding:10px 14px;background:var(--panel);border-bottom:1px solid #1e293b}
+.edit-controls .row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:6px 0}
+.edit-controls .sub{display:inline-flex;align-items:center;gap:6px}
+/* ——编辑区输入宽度：逐个可控 —— */
+#sizeW, #sizeH {           /* 地板大小两个数字框 */
+  width: 30px;
+  flex: 0 0 30px;          /* 避免在 flex 里被拉长 */
+}
+
+#levelName {               /* “关卡名称”输入框 */
+  width: 30px;            /* 自己改成喜欢的长度 */
+  flex: 0 0 72px;
+}
+
+/* 所有“ID”输入框（给它们一个 class，见第②步） */
+.edit-controls .id-input {
+  width: 72px;
+  flex: 0 0 72px;
+}
+
+/* 可选：数字输入的通用紧凑版（想用就给控件加类名 compact） */
+.edit-controls input[type="number"].compact,
+.edit-controls select.compact {
+  width: 72px; flex: 0 0 72px;
+}
+#hiddenSec { width: 30px; flex: 0 0 30px; }
+#pitDelay, #pitStay { width: 30px; flex:0 0 30px; }
+
+#stage{position:relative;width:100%;height:calc(100vh - 150px);display:grid;place-items:center}
+canvas{
+  width:100%;             /* 交给容器撑满 */
+  height:100%;
+  background:#0f1a2d;
+  border-radius:12px;
+  box-shadow:0 8px 40px rgba(0,0,0,.35)
+}
+
+/* 触屏手势支持：阻止浏览器把触摸当滚动/缩放 */
+#stage, canvas#game{
+  touch-action: none;          /* 关键：允许我们在 pointer 事件里 preventDefault */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.4);z-index:40}
+.dialog{background:#0f172a;border:1px solid #233044;padding:18px;border-radius:12px;min-width:320px;max-width:90vw}
+.dialog h3{margin:4px 0 12px 0}
+.dialog .actions{display:flex;gap:8px;justify-content:flex-end}
+textarea{width:min(80vw,900px);background:#0b1220;border:1px solid #233044;color:var(--text);padding:10px;border-radius:10px}
+
+/* ——通关弹窗：按钮居中、加间距、换颜色—— */
+#winModal .actions{
+  justify-content: center;      /* 按钮居中 */
+  margin-top: 16px;             /* 和上面的进度条拉开距离 */
+}
+
+#winOk{
+  background: #22c55e;          /* 按钮主色（绿色，可改成你喜欢的） */
+  border-color: #22c55e;
+  color: #052e16;
+  padding: 8px 18px;            /* 手感更好一点 */
+  font-weight: 600;
+}
+#winOk:hover{ filter: brightness(1.05); }
+
+
+/* --- 过关弹窗：脚印进度 --- */
+.foot-result{ margin:8px 0 14px; }
+.foot-result .row{
+  display:flex; align-items:center; justify-content:space-between;
+  color:var(--muted); margin:4px 0 6px;
+}
+.progress{
+  height:10px; border:1px solid #233044; background:#0b1220;
+  border-radius:999px; overflow:hidden;
+}
+.progress-bar{
+  height:100%; width:0%;
+  background:var(--primary);
+  transition:width .4s ease;
+}
+
+#inventory{display:flex;gap:8px;margin-left:8px}
+.slot{width:44px;height:44px;border:1px dashed #334155;border-radius:10px;display:grid;place-items:center;position:relative;overflow:hidden}
+.slot img{max-width:100%;max-height:100%}
+.slot .cnt{position:absolute;bottom:2px;right:4px;background:rgba(0,0,0,.5);padding:0 4px;border-radius:6px;font-size:12px}
+
+#fxLayer{
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 30;
+}
+
+/* 飘向 HUD 的动画令牌 */
+.fly{
+  position: absolute; width: 28px; height: 28px; border-radius: 50%;
+  background: #ffd166; box-shadow: 0 4px 16px rgba(0,0,0,.35);
+  transform: translate(-50%,-50%);
+  transition: transform .6s cubic-bezier(.2,.8,.2,1), opacity .6s;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.fly.paw{background:#22d3ee}
+.fly.item{ background:#94a3b8; }   /* 道具：低调灰蓝 */
+
+/* 游玩模式隐藏编辑 UI（JS 里也会设置 display:none；这里兜底） */
+body.play #editControls{display:none}
+body.multi #editControls{display:none}
+body.edit #bottomBar{display:none}
+
+.multi-only{display:none}
+body.multi .multi-only{display:flex}
+body.multi .hide-in-multi{display:none !important}
+
+canvas#game { image-rendering: optimizeSpeed; }
+
+/* 顶部小药水样式 */
+#coinHUD.pill{
+  margin-left: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  color:#ffd166;
+  font-weight: 600;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+
+/* HUD：金币 SVG 与关卡显示 */
+#coinHUD .icon { display:inline-block; vertical-align: -2px; margin-right: 4px; }
+#levelHUD.pill { margin-left: 8px; color: #cbd5e1; }
+#levelHUD b { color: #fff; }
+body:not(.play) #levelHUD{display:none !important}
+
+#tools{ display:inline-flex; gap:10px; margin-left:10px; }
+.tool-btn{
+  position: relative;
+  width: 46px;        /* 原 34px → 放大 */
+  height: 46px;       /* 原 32px → 放大 */
+  line-height: 46px;  /* 行高等于高度，文字可垂直居中备用 */
+  font-size: 20px;    /* 图标更清晰 */
+  background: rgba(255,255,255,.08);
+  color: #e5e7eb;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px;
+  cursor: pointer;
+  padding: 0;
+
+  /* 关键：用 flex 做绝对居中（更稳） */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.tool-btn:hover{ background: rgba(255,255,255,.15); }
+
+/* 角上的数量徽标：适配更大的按钮 */
+.tool-btn .cnt{
+  position: absolute;
+  right: -6px;
+  bottom:-6px;
+  background:#0ea5e9;
+  color:#fff;
+  font-size:12px;
+  min-width:20px;     /* 原 18 → 略大 */
+  height:20px;        /* 原 18 → 略大 */
+  line-height:20px;
+  text-align:center;
+  padding:0 4px;
+  border-radius:10px;
+  border:2px solid #0b1424;
+}
+.tool-btn.zero .cnt{ background:#f97316; } /* 显示价格时橙色提示 */
+
+/* 浮动提示 */
+.toast {
+  position: absolute;
+  left: 50%;
+  top: 80px;
+  transform: translate(-50%, -8px);
+  background: rgba(0,0,0,.72);
+  color: #fff;
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-size: 14px;
+  line-height: 1;
+  opacity: 0;
+  pointer-events: none;
+  transition: transform .25s ease, opacity .25s ease;
+  z-index: 9999;
+}
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+.fly.coin { background:#facc15; box-shadow:0 4px 16px rgba(0,0,0,.35); }
+
+/* 按模式显示按钮 */
+body.play #next { display: none !important; }      /* 游玩：隐藏“随机下一关” */
+body:not(.play) #restart { display: none !important; } /* 编辑：隐藏“重新开始” */
+
+/* ---- 双人模式 UI ---- */
+:root{
+  --card:#0f172a; --card-border:#22324a; --good:#22d3ee;
+}
+
+body.multi #stage{height:calc(100vh - 240px)}
+
+.multi-controls{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.multi-controls input[type="text"]{
+  min-width: 140px;
+}
+
+.multi-controls .timer{
+  background:#0b1424;
+  border:1px solid #1f2a3b;
+  padding:6px 10px;
+  border-radius:10px;
+  font-weight:600;
+}
+
+.room-settings-btn{
+  width:34px;
+  height:34px;
+  padding:0;
+  border-radius:10px;
+  display:grid;
+  place-items:center;
+  font-size:18px;
+}
+
+.dialog.room-settings{
+  min-width: 280px;
+}
+.dialog.room-settings .multi-controls{
+  display:grid;
+  grid-template-columns: 64px 1fr;
+  gap:8px 10px;
+  align-items:center;
+}
+.dialog.room-settings .multi-controls button{
+  width:100%;
+}
+.dialog.room-settings .row-actions{
+  grid-column: 1 / -1;
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:8px;
+}
+.dialog.room-settings #roomStatus{
+  grid-column: 1 / -1;
+  margin-left:0;
+}
+
+.scoreboard{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  padding:12px 16px;
+  background:var(--panel);
+  border-bottom:1px solid #1e293b;
+}
+
+.player-card{
+  min-width:220px;
+  padding:10px 12px;
+  background:var(--card);
+  border:1px solid var(--card-border);
+  border-radius:12px;
+}
+.player-card.active{border-color:var(--good);box-shadow:0 0 0 1px rgba(34,211,238,.35)}
+.player-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.player-head .tag{font-weight:700;color:#e2e8f0}
+.player-head .pct{color:var(--good);font-weight:700}
+.player-card.inactive .player-head .pct{color:#94a3b8}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(8,16px);
+  gap:4px;
+  margin-bottom:6px;
+}
+.grid .cell{
+  width:16px;height:16px;border-radius:4px;
+  background:#0b1324;border:1px solid #22324a;
+  display:grid;place-items:center;overflow:hidden;
+}
+.grid .cell img{
+  width:100%;height:100%;object-fit:cover;
+}
+.sub{color:var(--muted);font-size:12px}
+.vs{font-weight:800;color:#e2e8f0;letter-spacing:2px}
+
+/* 非双人模式强制隐藏双人区 */
+body:not(.multi) .multi-only{display:none !important}
+
+/* 双人模式：压缩卡片信息行 */
+body.multi .player-head .pct{display:none}
+body.multi .grid{
+  width:100%;
+  grid-template-columns:repeat(var(--slots, 5), 1fr);
+  gap:4px;
+}
+body.multi .grid .cell{
+  width:100%;
+  height:auto;
+  aspect-ratio:1 / 1;
+}
+body.multi .player-card .sub{
+  display:inline-flex;
+  gap:6px;
+  margin-top:4px;
+  margin-right:10px;
+  white-space:nowrap;
+}
+body.multi .player-card .sub:last-child{margin-right:0}
+
+/* ---- 底部栏 ---- */
+.bottombar{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  padding:10px 12px 14px;
+  background:var(--bg2);
+  border-top:1px solid #1e293b;
+}
+.bottombar #inventory{margin-left:0}
+.bottombar #tools{margin-left:0}
+
+/* ---- 游玩模式移动端布局 ---- */
+@media (max-width: 520px){
+  body.play{display:flex;flex-direction:column;min-height:100dvh}
+  body.play .topbar{padding:8px 10px}
+  body.play .topbar .left{width:100%;gap:6px;flex-wrap:nowrap}
+  body.play #restart,
+  body.play #next,
+  body.play #status{display:none !important}
+
+  body.play #levelHUD{
+    position:fixed;
+    left:12px;
+    bottom:calc(env(safe-area-inset-bottom, 0px) + 8px);
+    margin-left:0;
+    font-size:12px;
+    padding:4px 6px;
+    z-index:16;
+  }
+  body.play #mode{order:2}
+  body.play .hud{order:3}
+  body.play #coinHUD{order:4;margin-left:0}
+  body.play #levelHUD,
+  body.play .hud{
+    font-size:12px;
+    padding:4px 6px;
+  }
+  body.play #mode{padding:4px 6px;font-size:12px}
+  body.play #coinHUD{
+    font-size:12px;
+    padding:4px 8px;
+    gap:4px;
+    min-width:92px; /* 预留 5 位数字空间 */
+    justify-content:center;
+  }
+  body.play #coinAmount{
+    display:inline-block;
+    min-width:5ch;
+    text-align:right;
+  }
+  body.play .hud{gap:6px}
+  body.play .hud{white-space:nowrap}
+  body.play .hud .sep{margin:0 6px}
+  body.play .hud .label{display:none}
+  body.play .hud-icon{display:inline-block;margin-right:2px}
+  body.play .hud-icon.pet::before{content:"🐱"}
+  body.play .hud-icon.foot::before{content:"🐾"}
+
+  body.play #stage{
+    flex:1;
+    height:auto;
+    min-height:0;
+  }
+  body.play .bottombar{
+    padding-bottom:calc(env(safe-area-inset-bottom, 0px) + 14px);
+  }
+
+  body.multi{display:flex;flex-direction:column;min-height:100dvh}
+  body.multi #stage{
+    flex:1;
+    height:auto;
+    min-height:0;
+  }
+  body.multi .bottombar{
+    padding-bottom:calc(env(safe-area-inset-bottom, 0px) + 14px);
+  }
+  body.multi .topbar{padding:8px 10px}
+  body.multi .topbar .left{gap:6px}
+  body.multi .topbar .right{gap:6px}
+  body.multi .room-settings-btn{width:32px;height:32px}
+  body.multi .dialog.room-settings{
+    width:min(92vw, 360px);
+  }
+  body.multi .dialog.room-settings .row-actions{
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+  body.multi .scoreboard{
+    padding:8px 10px;
+    gap:8px;
+  }
+  body.multi .vs{display:none}
+  body.multi .player-card{
+    min-width:0;
+    flex:1;
+  }
+  body.multi .grid{
+    gap:4px;
+  }
+  body.multi .player-head .pct{display:none}
+  body.multi #inventory{display:none}
+  body.multi #tools{margin-top:0}
+}
+
+
+
+
+

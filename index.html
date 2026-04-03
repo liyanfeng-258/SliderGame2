@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>滑行涂色 / 关卡编辑器</title>
+  <link rel="stylesheet" href="./styles.css"/>
+  <link rel="icon" href="data:image/svg+xml,
+  <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'>
+    <circle cx='12' cy='12' r='10' fill='%23facc15'/>
+    <text x='12' y='16' text-anchor='middle' font-size='12' fill='%237c5a0b'>¥</text>
+  </svg>">
+</head>
+<body class="play">
+  <!-- 顶部状态栏 + HUD -->
+  <header class="topbar">
+    <div class="left">
+      <!-- 关卡序号显示 -->
+      <div id="levelHUD" class="pill">
+        关卡 <b id="levelIndex">0</b>/<b id="levelTotal">0</b>
+      </div>
+      
+      <select id="mode">
+        <option value="play">游玩</option>
+        <option value="edit">编辑</option>
+        <option value="multi">双人</option>
+      </select>
+
+      <button id="restart" class="primary hide-in-multi">重新开始</button>
+      <button id="next" class="hide-in-multi">随机生成</button>
+
+      <span class="hud hide-in-multi">
+        <span class="label label-pet">宠物</span><span class="hud-icon pet" aria-hidden="true"></span>
+        <b id="painted">0</b>/<b id="total">0</b>
+        <span class="sep"></span>
+        <span class="paw" id="footHUD">
+          <span class="label label-foot">脚印</span><span class="hud-icon foot" aria-hidden="true"></span>
+          <b id="footFound">0</b>/<b id="footTotal">0</b>
+        </span>
+      </span>
+
+      <!-- 金币显示（SVG） -->
+      <div id="coinHUD" class="pill">
+        <svg class="icon coin" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" fill="#facc15"/>
+          <circle cx="12" cy="12" r="7"  fill="none" stroke="#eab308" stroke-width="2"/>
+          <path d="M12 7v10M9 9h6M9 15h6" stroke="#7c5a0b" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span id="coinAmount">0</span>
+      </div>
+
+      <span id="status" class="status hide-in-multi">—</span>
+    </div>
+    <div class="right multi-only">
+      <span class="timer">剩余 <b id="timeLeft">03:00</b></span>
+      <button id="roomSettingsBtn" class="room-settings-btn" title="房间设置">⚙</button>
+    </div>
+  </header>
+
+  <!-- 双人模式：进度对比栏 -->
+  <section class="scoreboard multi-only">
+    <div class="player-card" id="cardA">
+      <div class="player-head">
+        <span class="tag" id="nameA">玩家A</span>
+        <span class="pct" id="pctA">0%</span>
+      </div>
+      <div class="grid" id="gridA"></div>
+      <div class="sub">脚印 <b id="footA">0/0</b></div>
+      <div class="sub">宠物 <b id="itemsCountA">0/0</b></div>
+    </div>
+    <div class="vs">VS</div>
+    <div class="player-card" id="cardB">
+      <div class="player-head">
+        <span class="tag" id="nameB">玩家B</span>
+        <span class="pct" id="pctB">0%</span>
+      </div>
+      <div class="grid" id="gridB"></div>
+      <div class="sub">脚印 <b id="footB">0/0</b></div>
+      <div class="sub">宠物 <b id="itemsCountB">0/0</b></div>
+    </div>
+  </section>
+
+  <!-- 编辑区工具（游玩模式下整体隐藏） -->
+  <section id="editControls" class="edit-controls">
+    <div class="row">
+      <label>地板大小</label>
+      <input id="sizeW" type="number" min="5" value="15"/>
+      <span>×</span>
+      <input id="sizeH" type="number" min="5" value="15"/>
+      <button id="resize">创建</button>
+
+      <label>画笔</label>
+      <select id="brush">
+        <option value="wall">墙</option>
+        <option value="floor">地板</option>
+        <option value="spawn">出生点</option>
+        <option value="coin">金币</option>
+        <option value="footprint">脚印</option>
+        <option value="plank">木板</option>
+        <option value="spike">墙刺</option>
+        <option value="hidden">隐藏墙</option>
+        <option value="turner">转向器</option>
+        <option value="bouncer">弹射器</option>
+        <option value="pit">地刺</option>
+        <option value="fragile">易碎墙</option>
+        <option value="stop">中转站</option>
+        <option value="groundDecor">地面装饰</option>
+        <option value="item">道具</option>
+        <option value="manhole">井盖</option>
+        <option value="rotator">旋转台</option>
+        <option value="pSwitch">P机关</option>
+      </select>
+
+      <!-- 转向器参数 -->
+      <span id="turnerControls" class="sub">
+        <label>转向</label>
+        <select id="turnDir">
+          <option value="U">上</option>
+          <option value="D">下</option>
+          <option value="L">左</option>
+          <option value="R">右</option>
+        </select>
+      </span>
+
+      <!-- 弹射器参数 -->
+      <span id="bouncerControls" class="sub">
+        <label>弹射</label>
+        <select id="bounceType">
+          <option value="LU">左上</option>
+          <option value="LD">左下</option>
+          <option value="RU">右上</option>
+          <option value="RD">右下</option>
+        </select>
+      </span>
+
+      <!-- 隐藏墙参数 -->
+      <span id="hiddenControls" class="sub">
+        <label>持续(s)</label>
+        <input id="hiddenSec" type="number" step="0.1" min="0" value="2"/>
+      </span>
+
+      <!-- 地刺参数 -->
+      <span id="pitControls" class="sub">
+        <label>触发延时(s)</label>
+        <input id="pitDelay" type="number" step="0.1" min="0" value="1"/>
+        <label>停留(s)</label>
+        <input id="pitStay" type="number" step="0.1" min="0" value="1"/>
+      </span>
+
+      <!-- 旋转台参数 -->
+      <span id="rotatorControls" class="sub">
+        <label>旋转间隔(s)</label>
+        <input id="rotatorInterval" type="number" step="0.1" min="0" value="2"/>
+      </span>
+
+      <!-- P机关参数 -->
+      <span id="pSwitchControls" class="sub">
+        <label>持续时间(s)</label>
+        <input id="pSwitchDuration" type="number" step="0.1" min="0" value="5"/>
+      </span>
+    </div>
+
+    <div class="row">
+      <span id="itemControls" class="sub">
+        <label>道具类型</label>
+        <select id="itemType"></select>
+        <input id="itemName" placeholder="道具名称(可选)"/>
+        <input id="itemImg" type="file" accept="image/*"/>
+        <button id="addType">新增道具类型</button>
+        <button id="removeType">删除当前类型</button>
+        <button id="clearItems">清空场景道具</button>
+      </span>
+
+      <input id="levelName" placeholder="关卡名称"/>
+      <button id="save">保存</button>
+      <select id="saved"></select>
+      <button id="load">载入</button>
+      <button id="del">删除</button>
+
+      <button id="export">导出JSON</button>
+      <button id="importBtn">导入JSON</button>
+      <input id="importFile" type="file" accept="application/json" hidden/>
+      <button id="clearCache">清空备份</button>
+    </div>
+
+    <div class="row">
+      <span class="sub">
+        <label>障碍ID:上限</label>
+        <input id="rngObstacles" class="id-input" placeholder="例 1:20,10:6,14:3"/>
+      </span>
+      <span class="sub">
+        <label>道具总数</label>
+        <input id="rngItemTotal" type="number" min="0" step="3" value="0" class="compact"/>
+      </span>
+      <span class="sub">
+        <label>道具类型</label>
+        <input id="rngItemTypes" type="number" min="0" value="0" class="compact"/>
+      </span>
+    </div>
+  </section>
+
+  <!-- 舞台（canvas + 动画层） -->
+  <main id="stage">
+    <canvas id="game" width="1200" height="900"></canvas>
+    <div id="fxLayer"></div>
+  </main>
+
+  <!-- 底部栏：背包 + 道具（游玩模式） -->
+  <footer id="bottomBar" class="bottombar">
+    <div id="inventory" aria-label="背包"></div>
+    <div id="tools">
+      <button id="toolTeleport" class="tool-btn" title="传送(100)">
+        <span class="cnt" id="cntTeleport">0</span>⇲
+      </button>
+      <button id="toolUndo"    class="tool-btn" title="回退一步(100)">
+        <span class="cnt" id="cntUndo">0</span>↩︎
+      </button>
+      <button id="toolShuffle" class="tool-btn" title="打乱宠物(300)">
+        <span class="cnt" id="cntShuffle">0</span>⇆
+      </button>
+      <button id="toolSlot"    class="tool-btn" title="扩展栏位(900)">
+        <span class="cnt" id="cntSlot">0</span>＋
+      </button>
+    </div>
+  </footer>
+
+  <!-- 双人模式：房间设置弹窗 -->
+  <div id="roomSettingsModal" class="modal">
+    <div class="dialog room-settings">
+      <div class="multi-controls">
+        <label>服务器</label>
+        <input id="wsUrl" type="text" placeholder="ws://192.168.1.2:8787" />
+        <label>房间</label>
+        <input id="roomCode" type="text" placeholder="如 AB12" />
+        <label>昵称</label>
+        <input id="myName" type="text" placeholder="输入你的名字" maxlength="12" />
+        <button id="setName">设置昵称</button>
+        <div class="row-actions">
+          <button id="createRoom" class="primary">创建房间</button>
+          <button id="joinRoom">加入房间</button>
+          <button id="leaveRoom" disabled>离开</button>
+        </div>
+        <span id="roomStatus" class="status">未连接</span>
+      </div>
+      <div class="actions">
+        <button id="closeRoomSettings" class="primary">关闭界面</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗：JSON -->
+  <div id="jsonModal" class="modal">
+    <div class="dialog">
+      <h3>关卡 JSON</h3>
+      <textarea id="jsonText" rows="16"></textarea>
+      <div class="actions">
+        <button id="copyJson">复制</button>
+        <button id="downloadJson">下载</button>
+        <button id="loadFromText" class="primary">载入这份</button>
+        <button id="closeJson">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗：死亡 -->
+  <div id="deadModal" class="modal">
+    <div class="dialog">
+      <h3>死死死死死死死死死死</h3>
+      <div class="actions">
+        <button id="deadOk" class="primary">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗：失败（背包满等） -->
+  <div id="loseModal" class="modal">
+    <div class="dialog">
+      <h3>游戏结束</h3>
+      <div class="actions">
+        <button id="retry" class="primary">重新开始</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗：清空备份 -->
+  <div id="clearModal" class="modal">
+    <div class="dialog">
+      <h3>清空成功</h3>
+      <div class="actions">
+        <button id="clearOk" class="primary">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗：通关 -->
+  <div id="winModal" class="modal">
+    <div class="dialog">
+      <h3>🎉 恭喜通关！</h3>
+      <!-- 脚印收集结果 -->
+      <div class="foot-result">
+        <div class="row">
+          <span>脚印收集</span>
+          <span id="footResultText">0 / 0（0%）</span>
+        </div>
+        <div id="coinSettle" style="margin-top:8px;color:#ffd166;">本局结算：+<span id="coinSettleNum">0</span> 金币</div>
+        <div class="progress">
+          <div class="progress-bar" id="footResultBar" style="width:0%"></div>
+        </div>
+      </div>      
+      <div class="actions">
+        <button id="winOk" class="primary">下一关</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗：双人结算 -->
+  <div id="matchModal" class="modal">
+    <div class="dialog">
+      <h3 id="matchTitle">本局结束</h3>
+      <p id="matchDesc">等待结算…</p>
+      <div class="actions">
+        <button id="rematch" class="primary">再来一局</button>
+        <button id="exitMatch">退出房间</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>

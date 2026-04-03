@@ -1,0 +1,115 @@
+:root {
+  --card: #0f172a;
+  --card-border: #22324a;
+  --good: #22d3ee;
+  --bad: #f97316;
+}
+
+body.multi #stage {
+  height: calc(100vh - 210px);
+}
+
+.multi-top .right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pill {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  font-weight: 600;
+}
+
+.timer {
+  background: #0b1424;
+  border: 1px solid #1f2a3b;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.scoreboard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 12px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid #1e293b;
+}
+
+.player-card {
+  min-width: 220px;
+  padding: 10px 12px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+}
+
+.player-card.active {
+  border-color: var(--good);
+  box-shadow: 0 0 0 1px rgba(34,211,238,.35);
+}
+
+.player-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.player-head .tag {
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.player-head .pct {
+  color: var(--good);
+  font-weight: 700;
+}
+
+.player-card.inactive .player-head .pct {
+  color: #94a3b8;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(8, 16px);
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.grid .cell {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: #0b1324;
+  border: 1px solid #22324a;
+}
+
+.grid .cell.filled {
+  background: var(--good);
+  border-color: #0ea5e9;
+}
+
+.sub {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.vs {
+  font-weight: 800;
+  color: #e2e8f0;
+  letter-spacing: 2px;
+}
+
+#matchModal .dialog {
+  max-width: 420px;
+}
+
+#matchDesc {
+  color: var(--muted);
+}

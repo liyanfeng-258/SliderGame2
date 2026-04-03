@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>滑行涂色 / 双人模式</title>
+  <link rel="stylesheet" href="./styles.css"/>
+  <link rel="stylesheet" href="./multiplayer.css"/>
+</head>
+<body class="multi">
+  <header class="topbar multi-top">
+    <div class="left">
+      <div class="pill">双人模式</div>
+      <label>服务器</label>
+      <input id="wsUrl" type="text" value="ws://localhost:8787" />
+      <label>房间</label>
+      <input id="roomCode" type="text" placeholder="如 AB12" />
+      <button id="createRoom" class="primary">创建房间</button>
+      <button id="joinRoom">加入房间</button>
+      <button id="leaveRoom" disabled>离开</button>
+      <span id="roomStatus" class="status">未连接</span>
+    </div>
+    <div class="right">
+      <div class="timer">剩余 <b id="timeLeft">03:00</b></div>
+    </div>
+  </header>
+
+  <section class="scoreboard">
+    <div class="player-card" id="cardA">
+      <div class="player-head">
+        <span class="tag">玩家A</span>
+        <span class="pct" id="pctA">0%</span>
+      </div>
+      <div class="grid" id="gridA"></div>
+      <div class="sub">脚印 <b id="footA">0/0</b></div>
+    </div>
+    <div class="vs">VS</div>
+    <div class="player-card" id="cardB">
+      <div class="player-head">
+        <span class="tag">玩家B</span>
+        <span class="pct" id="pctB">0%</span>
+      </div>
+      <div class="grid" id="gridB"></div>
+      <div class="sub">脚印 <b id="footB">0/0</b></div>
+    </div>
+  </section>
+
+  <section id="stage">
+    <canvas id="game"></canvas>
+  </section>
+  <div id="fxLayer"></div>
+
+  <select id="mode" style="display:none">
+    <option value="play">play</option>
+  </select>
+
+  <div id="matchModal" class="modal">
+    <div class="dialog">
+      <h3 id="matchTitle">本局结束</h3>
+      <p id="matchDesc">等待结算…</p>
+      <div class="actions">
+        <button id="rematch" class="primary">再来一局</button>
+        <button id="exitMatch">退出房间</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./js/multi/main.js"></script>
+</body>
+</html>
